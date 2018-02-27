@@ -1,7 +1,3 @@
-// import processing.opengl.*;
-import java.util.Calendar;
-import java.util.Date;
-
 Globe globe;
 PImage lightEarth, darkEarth;
 Timeline timeline = new Timeline();
@@ -9,6 +5,7 @@ Mouse mouse = new Mouse();
 float scale = 0;
 Vector3 offset = new Vector3(0, 0, 0.0);
 Toggler toggler;
+ColorToggler colorToggler;
 Map map;
 Pin[] pins = new Pin[]{};
 Scale magnitudeScale = new Scale();
@@ -16,8 +13,9 @@ Magnitude MagnitudeColor = new Magnitude();
 
 public class Magnitude {
     public final color High = color(182,65,26);
-    public final color Medium = color(238,195,216);
-    public final color Low = color(138,43,226);
+    public final color Medium = color(138,43,226);
+    public final color Low = color(238,195,216);
+
 }
 
 void setup() {
@@ -29,6 +27,7 @@ void setup() {
     lightEarth = loadImage("earth-light.jpg");
     darkEarth = loadImage("earth-dark.png");
     toggler = new Toggler();
+    colorToggler = new ColorToggler();
     globe = new Globe(300, new Vector3(width / 2, height / 2, 0), new Vector3(0, 0, 0));
     map = new Map();
     createPinArray(300);
@@ -43,10 +42,11 @@ void draw() {
     } else {
         map.draw();
     }
-    fill(255, 0, 0);
-    text("Framerate: " + round(frameRate), 20, 30);
+    // fill(255, 0, 0);
+    // text("Framerate: " + round(frameRate), 20, 30);
     timeline.draw();
     toggler.draw();
+    colorToggler.draw();
     magnitudeScale.draw();
 }
 
@@ -65,6 +65,11 @@ void mouseReleased() {
 void mouseClicked() {
     if (toggler.isHovering()) {
         toggler.status = !toggler.status;
+    }
+
+    if (colorToggler.isHovering()){
+        colorToggler.status = !colorToggler.status;
+        globe.toggleTexture();
     }
 }
 
@@ -108,12 +113,8 @@ void createPinArray(float radius) {
 }
 
 void keyPressed(KeyEvent event) {
-    if(event.getKeyCode() == 40) offset.x += 10;
-    if(event.getKeyCode() == 38) offset.x -= 10;
-    if(event.getKeyCode() == 37) offset.y += 100;
-    if(event.getKeyCode() == 39) offset.y -= 100;
-    if(event.getKeyCode() == 65) offset.z += .1;
-    if(event.getKeyCode() == 68) offset.z -= .1;
+    if(event.getKeyCode() == 37) timeline.decrease();
+    if(event.getKeyCode() == 39) timeline.increase();
 }
 
 class UiElement {
@@ -129,9 +130,11 @@ class Map {
         hint(DISABLE_DEPTH_TEST);
         int h = height - toggler.w - (3 * margin);
         int w = (h * lightEarth.width) / lightEarth.height;
-
-        image(lightEarth, margin, margin, w, h);
-        
+        if(colorToggler.status) {
+            image(lightEarth, margin, margin, w, h);
+        } else {
+            image(darkEarth, margin, margin, w, h);
+        }
 
 
         fill(255);
@@ -149,6 +152,64 @@ class Map {
         rect(0,0, margin, height);
         fill(255);
         hint(ENABLE_DEPTH_TEST);
+    }
+}
+
+class ColorToggler extends UiElement {
+    public final int w = 200, h = 120;
+    public final int margin = 20;
+    public boolean status = false;
+
+    public boolean isHovering() {
+        return (mouseX >= width - margin - w && mouseX <=  width - margin && mouseY >=  toggler.h + magnitudeScale.h + (3 * margin) && mouseY <=  toggler.h + magnitudeScale.h + (3 * margin) + h);
+    }
+
+    public void draw() {
+        pushMatrix();
+        hint(DISABLE_DEPTH_TEST);
+
+        rectMode(CORNERS);
+        noStroke();
+        fill(63, 133, 239, isHovering() ? 255 : 100);
+        rect(width - margin - w, toggler.h + magnitudeScale.h + (3 * margin), width - margin, toggler.h + magnitudeScale.h + (3 * margin) + h );
+        fill(58, 115, 219, isHovering() ? 255 : 100);
+        rect(width - margin - w, toggler.h + magnitudeScale.h + (3 * margin), width - margin, toggler.h + magnitudeScale.h + (3 * margin) + 30);
+        fill(221,221,221, isHovering() ? 255 : 100);
+
+        textAlign(CENTER);
+        text("Color Mode", width - margin - (w / 2),  toggler.h + magnitudeScale.h + (3 * margin) + 22);
+        stroke(0);
+        rect(width - margin - w + 20, toggler.h + magnitudeScale.h + (3 * margin) + 50, 
+            width - margin - 20, toggler.h + magnitudeScale.h + (3 * margin) + 80);
+        noStroke();
+        if(status) {
+            fill(83, 122, 250, isHovering() ? 255 : 100);
+        } else {
+            fill(255, 255, 255, isHovering() ? 255 : 100);
+        }
+        triangle(width - margin - w + 20, toggler.h + magnitudeScale.h + (3 * margin) + 50, 
+                width - margin - 20, toggler.h + magnitudeScale.h + (3 * margin) + 50, 
+                width - margin - w + 20, toggler.h + magnitudeScale.h + (3 * margin) + 80);
+        if(status) {
+            fill(50, 205, 50, isHovering() ? 255 : 100);
+        } else {
+            fill(0, 0, 0, isHovering() ? 255 : 100);
+        }        
+        triangle(width - margin - w + 20, toggler.h + magnitudeScale.h + (3 * margin) + 80, 
+                width - margin - 20, toggler.h + magnitudeScale.h + (3 * margin) + 50, 
+                width - margin - 20, toggler.h + magnitudeScale.h + (3 * margin) + 80);
+        
+        
+        fill(255, 255, 255, isHovering() ? 255 : 100);
+        text("Click to Toggle", width - margin - (w / 2),  (3 * margin) + h + toggler.h + magnitudeScale.h - 12);
+
+        tint(255,255);
+        fill(255);
+        stroke(0);
+        strokeWeight(1);
+        textAlign(LEFT);
+        hint(ENABLE_DEPTH_TEST);
+        popMatrix();
     }
 }
 
@@ -264,6 +325,16 @@ class Timeline extends UiElement {
             mouseY >= height - margin - size - 70));
     }
 
+    public void increase() {
+        year ++;
+        year = constrain(year, 1900, 2007);
+    }
+
+    public void decrease() {
+        year --;
+        year = constrain(year, 1900, 2007);
+    }
+
     public void drag() {
         float minX = map(1900, 1900, 2007, margin + 40, width - margin - 40);
         float maxX = map(2007, 1900, 2007, margin + 40, width - margin - 40);
@@ -333,7 +404,7 @@ class Timeline extends UiElement {
 
 class Globe {
     public Vector3 position, rotation;
-    private PShape xAxis, yAxis, zAxis, globe, pinShape;
+    private PShape xAxis, yAxis, zAxis, globe, highPinShape, mediumPinShape, lowPinShape;
     private float radius;
 
     public Globe(float radius, Vector3 position, Vector3 rotation) {
@@ -341,7 +412,7 @@ class Globe {
         this.rotation = rotation;
         this.radius = radius;
         globe = createShape(SPHERE, radius);
-        globe.setTexture(darkEarth);
+        globe.setTexture(colorToggler.status ? lightEarth : darkEarth);
         globe.setStroke(color(0, 0, 0, 0)); 
 
         // xAxis = createShape(BOX, 1000, 10, 10);
@@ -351,10 +422,23 @@ class Globe {
         // zAxis = createShape(BOX, 10, 10, 1000);
         // zAxis.setFill(color(0,0,255));
 
-        pinShape = createShape(SPHERE, 5);
-        pinShape.setFill(color(146,20,12));
-        pinShape.setStroke(color(0,0,0,0));
+        highPinShape = createShape(SPHERE, 15);
+        highPinShape.setFill(MagnitudeColor.High);
+        highPinShape.setStroke(color(0,0,0,0));
+
+        mediumPinShape = createShape(SPHERE, 10);
+        mediumPinShape.setFill(MagnitudeColor.Medium);
+        mediumPinShape.setStroke(color(0,0,0,0));
+
+        lowPinShape = createShape(SPHERE, 5);
+        lowPinShape.setFill(MagnitudeColor.Low);
+        lowPinShape.setStroke(color(0,0,0,0));
     }
+
+    public void toggleTexture() {
+        globe = createShape(SPHERE, radius);
+        globe.setTexture(colorToggler.status ? lightEarth : darkEarth);
+        globe.setStroke(color(0, 0, 0, 0));     }
 
     private void draw(float scale) { 
         pushMatrix();
@@ -369,7 +453,7 @@ class Globe {
         popMatrix();
         for(Pin pin : pins) {
             if(pin.year ==  timeline.year) {
-                pin.draw3D(position, rotation, pinShape);    
+                pin.draw3D(position, rotation, highPinShape, mediumPinShape, lowPinShape);    
             }
         }
     }
@@ -396,7 +480,7 @@ class Pin {
         this.y =  ((mapHeight/180.0) * (90 - latitude)) + mapYOffset;
     }
     
-    public void draw3D(Vector3 relativePosition, Vector3 relativeRotation, PShape pinShape) {
+    public void draw3D(Vector3 relativePosition, Vector3 relativeRotation, PShape highPinShape, PShape mediumPinShape, PShape lowPinShape) {
         pushMatrix();
         translate(relativePosition.x, relativePosition.y, relativePosition.z + scale);
         rotateX(relativeRotation.x);
@@ -405,27 +489,34 @@ class Pin {
         translate(position.x, position.y, position.z);
 
         if(modelZ(0, 0, 0) > 0) {
-            shape(pinShape);
+            if(this.magnitude >= 9f) {
+                shape(highPinShape);
+            } else if(this.magnitude >= 5f) {
+                shape(mediumPinShape);
+            } else {
+                shape(lowPinShape);
+            }
         }
         popMatrix();
     }
 
     public void draw2D() {
         hint(DISABLE_DEPTH_TEST);
-        if(this.magnitude >= 9) {
-            fill(MagnitudeColor.High);
-        } else if(this.magnitude >= 5) {
+        ellipseMode(RADIUS);
+        if(this.magnitude >= 9f) {
+            fill(MagnitudeColor.High); 
+            ellipse(x, y, 20, 20);
+        } else if(this.magnitude >= 5f) {
             fill(MagnitudeColor.Medium);
+            ellipse(x, y, 15, 15);
+
         } else {
             fill(MagnitudeColor.Low);
+            ellipse(x, y, 10, 10);
         }
-        ellipseMode(RADIUS);
-        ellipse(x, y, 10, 10);
         fill(255);
         hint(ENABLE_DEPTH_TEST);
     }
-
-    
 
     private Vector3 LongLatToVector(float latitude, float longitude, float radius) {
         float lat = radians(-latitude);
