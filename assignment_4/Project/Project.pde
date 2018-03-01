@@ -1,3 +1,7 @@
+// Max Chehab
+// 313 Data Vis
+// 01/03/18
+
 Globe globe;
 PImage lightEarth, darkEarth;
 Timeline timeline = new Timeline();
@@ -11,17 +15,11 @@ Pin[] pins = new Pin[]{};
 Scale magnitudeScale = new Scale();
 Magnitude MagnitudeColor = new Magnitude();
 
-public class Magnitude {
-    public final color High = color(182,65,26);
-    public final color Medium = color(138,43,226);
-    public final color Low = color(238,195,216);
-
-}
-
+// 
 void setup() {
     cursor(HAND);
     textSize(20);
-    // size(1200, 1000, P3D);
+    // size(1200, 1000, P3D); // Should scale within reason, toggle this if you don't want fullscreen
     fullScreen(P3D);
     background(0);
     lightEarth = loadImage("earth-light.jpg");
@@ -36,20 +34,22 @@ void setup() {
 void draw() {
     background(0);
 
+    // Toggle 3d to 2d model
     if(toggler.status) {
         directionalLight(255, 255, 255, 0.4f, 0.2f, -2f);
         globe.draw(scale);
     } else {
         map.draw();
     }
-    // fill(255, 0, 0);
-    // text("Framerate: " + round(frameRate), 20, 30);
+
+    // Draw ui components
     timeline.draw();
     toggler.draw();
     colorToggler.draw();
     magnitudeScale.draw();
 }
 
+// Timeline and globe dragging
 void mousePressed() {
     cursor(MOVE);
     mouse.set(mouseX, mouseY);
@@ -62,6 +62,7 @@ void mouseReleased() {
     cursor(HAND);
 }
 
+// Check for toggler collision
 void mouseClicked() {
     if (toggler.isHovering()) {
         toggler.status = !toggler.status;
@@ -73,6 +74,7 @@ void mouseClicked() {
     }
 }
 
+// Check scrolling
 void mouseWheel(MouseEvent event) {
     if(toggler.status) {
         scale += event.getCount() > 0 ? 10 : -10;
@@ -80,6 +82,7 @@ void mouseWheel(MouseEvent event) {
     }
 }
 
+// Globe and timeline dragging
 void mouseDragged() {
     Mouse currentMouse = new Mouse(mouseX, mouseY);
 
@@ -91,12 +94,8 @@ void mouseDragged() {
     }
 }
 
+// Reads data from provided data.csv
 void createPinArray(float radius) {
-    // int h = height - toggler.w - 60;
-    // int w = (h * lightEarth.width) / lightEarth.height;
-
-    // this.pins = new Pin[] {new Pin(1955, 1, -28.334493, 153.549068, radius, w, h, 20,  (height - h) / 2),
-    // new Pin(1955, 1, 26.8206, 30.8025, radius, w, h, 20, (height - h) / 2)};
     Table data = loadTable("data.csv");
     for(TableRow row : data.rows()) {
         // icat,asol,isol,yr,mon,day,hr,min,sec,glat,glon,dep,greg,ntel,mag
@@ -108,26 +107,32 @@ void createPinArray(float radius) {
         int h = height - toggler.w - 60;
         int w = (h * lightEarth.width) / lightEarth.height;
 
-    pins = (Pin[]) append(pins, new Pin(year, magnitude, latitude, longitude, radius, w, h, 20, 20));
+        pins = (Pin[]) append(pins, new Pin(year, magnitude, latitude, longitude, radius, w, h, 20, 20));
     }
 }
 
+// Check for arrow key presses
 void keyPressed(KeyEvent event) {
     if(event.getKeyCode() == 37) timeline.decrease();
     if(event.getKeyCode() == 39) timeline.increase();
 }
 
+// Parent class for all interactive ui objects
 class UiElement {
     public boolean isHovering () {
         return false;
     }
 }
 
+// 2d map
 class Map {
     private final int margin = 20;
+
+    // draw the map
     public void draw() {
         pushMatrix();
         hint(DISABLE_DEPTH_TEST);
+
         int h = height - toggler.w - (3 * margin);
         int w = (h * lightEarth.width) / lightEarth.height;
         if(colorToggler.status) {
@@ -135,12 +140,11 @@ class Map {
         } else {
             image(darkEarth, margin, margin, w, h);
         }
-
-
         fill(255);
         hint(ENABLE_DEPTH_TEST);
         popMatrix();
 
+        // overlay all the pins
         for(Pin pin : pins) {
             if(pin.year ==  timeline.year) {
                 pin.draw2D();    
@@ -155,13 +159,17 @@ class Map {
     }
 }
 
+// Toggles color mode
 class ColorToggler extends UiElement {
     public final int w = 200, h = 120;
     public final int margin = 20;
     public boolean status = false;
 
     public boolean isHovering() {
-        return (mouseX >= width - margin - w && mouseX <=  width - margin && mouseY >=  toggler.h + magnitudeScale.h + (3 * margin) && mouseY <=  toggler.h + magnitudeScale.h + (3 * margin) + h);
+        return (mouseX >= width - margin - w && 
+            mouseX <=  width - margin && 
+            mouseY >=  toggler.h + magnitudeScale.h + (3 * margin) && 
+            mouseY <=  toggler.h + magnitudeScale.h + (3 * margin) + h);
     }
 
     public void draw() {
@@ -402,9 +410,10 @@ class Timeline extends UiElement {
     }
 }
 
+// 3d globe class
 class Globe {
     public Vector3 position, rotation;
-    private PShape xAxis, yAxis, zAxis, globe, highPinShape, mediumPinShape, lowPinShape;
+    private PShape globe, highPinShape, mediumPinShape, lowPinShape;
     private float radius;
 
     public Globe(float radius, Vector3 position, Vector3 rotation) {
@@ -414,13 +423,6 @@ class Globe {
         globe = createShape(SPHERE, radius);
         globe.setTexture(colorToggler.status ? lightEarth : darkEarth);
         globe.setStroke(color(0, 0, 0, 0)); 
-
-        // xAxis = createShape(BOX, 1000, 10, 10);
-        // xAxis.setFill(color(255,0,0));
-        // yAxis = createShape(BOX, 10, 1000, 10);
-        // yAxis.setFill(color(0,255,0));
-        // zAxis = createShape(BOX, 10, 10, 1000);
-        // zAxis.setFill(color(0,0,255));
 
         highPinShape = createShape(SPHERE, 15);
         highPinShape.setFill(MagnitudeColor.High);
@@ -435,11 +437,14 @@ class Globe {
         lowPinShape.setStroke(color(0,0,0,0));
     }
 
+    // Method to change texture
     public void toggleTexture() {
         globe = createShape(SPHERE, radius);
         globe.setTexture(colorToggler.status ? lightEarth : darkEarth);
-        globe.setStroke(color(0, 0, 0, 0));     }
+        globe.setStroke(color(0, 0, 0, 0));     
+    }
 
+    // rotate globe to specified position and rotation and draw
     private void draw(float scale) { 
         pushMatrix();
         translate(position.x, position.y, position.z + scale);
@@ -447,9 +452,6 @@ class Globe {
         rotateY(rotation.y);
         rotateZ(rotation.z);
         shape(globe);
-        // shape(xAxis); // RED
-        // shape(yAxis); // GREEN
-        // shape(zAxis); // BLUE
         popMatrix();
         for(Pin pin : pins) {
             if(pin.year ==  timeline.year) {
@@ -467,6 +469,7 @@ class Globe {
     }
 }
 
+// Simple pin class to keep track of data point
 class Pin {
     private Vector3 position;
     public int year;
@@ -482,12 +485,14 @@ class Pin {
     
     public void draw3D(Vector3 relativePosition, Vector3 relativeRotation, PShape highPinShape, PShape mediumPinShape, PShape lowPinShape) {
         pushMatrix();
+        // Translate and rotate relative to the globe
         translate(relativePosition.x, relativePosition.y, relativePosition.z + scale);
         rotateX(relativeRotation.x);
         rotateY(relativeRotation.y);
         rotateZ(relativeRotation.z);
         translate(position.x, position.y, position.z);
 
+        //If the pin is within the camera's viewport draw the sphere
         if(modelZ(0, 0, 0) > 0) {
             if(this.magnitude >= 9f) {
                 shape(highPinShape);
@@ -500,6 +505,7 @@ class Pin {
         popMatrix();
     }
 
+    // Draw pins as ellipses
     public void draw2D() {
         hint(DISABLE_DEPTH_TEST);
         ellipseMode(RADIUS);
@@ -518,6 +524,8 @@ class Pin {
         hint(ENABLE_DEPTH_TEST);
     }
 
+    // Math to convert longitude and latitude to 3d coordinates 
+    // https://stackoverflow.com/a/10475267/9302674
     private Vector3 LongLatToVector(float latitude, float longitude, float radius) {
         float lat = radians(-latitude);
         float lon = radians(-longitude - 180);
@@ -528,7 +536,7 @@ class Pin {
         return new Vector3(x, z ,y);
     }
 }
-
+// Simple 3 point vector class
 class Vector3 { 
     public float x, y, z;
 
@@ -538,7 +546,7 @@ class Vector3 {
         this.z = z;
     }
 }
-
+// Simple 2d mouse class
 class Mouse {
     float x, y;
 
@@ -556,4 +564,10 @@ class Mouse {
         this.x = x;
         this.y = y;
     }
+}
+
+public class Magnitude {
+    public final color High = color(182,65,26);
+    public final color Medium = color(138,43,226);
+    public final color Low = color(238,195,216);
 }
