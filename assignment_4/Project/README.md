@@ -34,3 +34,5 @@ I referenced this StackOverflow comment https://stackoverflow.com/a/10475267/930
 ```
 
 Before implementing occulsion, framerate was really, really bad. I also created occulsion in a really hacky method. In this model the camera's position is constant. There is also a rotating sphere in the center of the model (0, 0, 0). To check if an object is visible, one simply had to check if its absolute z-axis was greater than zero. Because of this, the model now runs at a steady 60fps on my moderate spec'd laptop.
+
+I also noticed that creating a different sphere for each individual data point was a resource hog. I optimized this by having three fixed sizes, rendering each of these spheres in memory, and referencing them when posistioning them. Instead of calculating 13,000 spheres I only calculate three (technicaly four if you include the globe).
