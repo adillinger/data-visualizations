@@ -15,7 +15,7 @@ There is a lot going on here, I'll try my best to explain everything.
 
 The obvious mastery is the 3D visualization of the earth.
 
-To preface, I only used documentation and the occasional StackOverflow comment to produce these results. I tried my hardest to implement everything on my own and test my knowledge. Also, if you prefer to read this readme file on github the link is provided below, unless, of course, you prefer this shebatical of number symbols and asterixs. To each his own.
+To preface, I only used documentation and the occasional StackOverflow comment to produce these results. I tried my best to implement everything on my own and test my knowledge. Also, if you prefer to read this readme file on github the link is provided below, unless, of course, you prefer this shebatical of number symbols and asterixs. To each his own.
 https://github.com/maxchehab/data-visualizations/tree/master/assignment_4/Project
 
 To be fair, Processing does a lot of hand holding when it comes to 3D graphics. The only things that weren't straightforward was calculating the 3d coordinates for latitude and longitude and occulsion.
