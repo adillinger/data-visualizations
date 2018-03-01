@@ -271,7 +271,7 @@ class Scale extends UiElement {
 class Toggler extends UiElement {
     public final int w = 200, h = 260;
     private PImage globeImage, mapImage;
-    public boolean status = false;
+    public boolean status = true;
     public final int margin = 20;
 
     public boolean isHovering() {
