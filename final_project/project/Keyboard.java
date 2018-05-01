@@ -2,7 +2,7 @@ import processing.core.*;
 
 public class Keyboard implements UIElement {
 
-    final int MARGIN = 100;
+    final int MARGIN = 200;
     final float SCALE_FACTOR = 0.20f;
 
     int[] pixels;
@@ -18,11 +18,11 @@ public class Keyboard implements UIElement {
         keyboardImage.resize(Math.round(keyboardImage.width * SCALE_FACTOR),
                 Math.round(keyboardImage.height * SCALE_FACTOR));
 
-        heatmap = p.createImage(keyboardImage.width, keyboardImage.height + 30, p.ARGB);
+        heatmap = p.createImage(keyboardImage.width, keyboardImage.height + 100, p.ARGB);
 
         startX = ((p.width - keyboardImage.width) / 2);
         endX = (startX + (keyboardImage.width));
-        startY = p.height - keyboardImage.height - MARGIN;
+        startY = MARGIN;
         endY = startY + keyboardImage.height;
 
         for (int x = 0; x < heatmap.width; x++) {

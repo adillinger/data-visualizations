@@ -41,6 +41,17 @@ public class Key implements Comparable {
         return this;
     }
 
+    public static Key getKeyWithValue(String value) {
+        for (String v : KeyPosition.getValues(value)) {
+            for (Key key : keys) {
+                if (Arrays.asList(v).contains(key.value)) {
+                    return key;
+                }
+            }
+        }
+        return null;
+    }
+
     private static void loadKeys() {
         Map<String, Key> keyMap = new HashMap<String, Key>();
 
